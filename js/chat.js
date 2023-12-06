@@ -29,14 +29,17 @@ messagesRef.orderBy("timestamp").onSnapshot((snapshot) => {
 
   snapshot.forEach((doc) => {
     const message = doc.data();
+    var messageData;
     const messageElement = document.createElement("div");
     if (message.username == recupererCookie("UserChat")) {
       messageElement.classList.add("divMessageYou");
+      messageData = "vous";
     } else {
       messageElement.classList.add("divMessage");
+      messageData = message.username;
     }
 
-    const elementsData = [`de : ${message.username}`, message.text];
+    const elementsData = [`de : ${messageData}`, message.text];
     const messageClass = ["message1", "message2"];
     const div = document.createElement("p");
 
