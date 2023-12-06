@@ -12,11 +12,17 @@ firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 var userId;
 var User = recupererCookie("user");
+const isPresence = true;
+
 if (!User) {
   console.log("document vide");
   window.location.href = "erreurConnexion.html";
 }
 const documentReference = db.collection("utilisateurs").doc(User);
+const userConnected = db.collection("userConnected");
+userConnected
+  .doc(recupererCookie("user"))
+  .set({ connectedName: recupererCookie("UserChat") });
 
 documentReference
   .get()
@@ -52,6 +58,7 @@ function recupererCookie(nom) {
 }
 
 function deleteCookie() {
+  db.collection("userConnected").doc(recupererCookie("user")).delete();
   const documentReference = db.collection("utilisateurs").doc(User);
   const dataToWrite = {
     userID: 0,
@@ -65,8 +72,36 @@ function deleteCookie() {
       document.cookie =
         "connected=; expires=Thu, 18 Dec 2013 12:00:00 UTC; path=/";
       document.cookie = "user=; expires=Thu, 18 Dec 2013 12:00:00 UTC; path=/";
+      document.cookie =
+        "UserChat=; expires=Thu, 18 Dec 2013 12:00:00 UTC; path=/";
     })
     .catch((error) => {
       console.error("Erreur lors de l'ajout des données au document : ", error);
     });
 }
+
+/* chat */
+const connectedUser = db.collection("userConnected");
+const BoxConnectedUser = document.getElementById("userConnectedDiv");
+
+connectedUser.onSnapshot((snapshot) => {
+  BoxConnectedUser.innerHTML = "";
+
+  snapshot.forEach((doc) => {
+    value = doc.data();
+    UserNameP = document.createElement("p");
+    if (value.chat && isPresence) {
+      UserNameP.textContent = value.connectedName + "(est dans le chat)";
+    } else if (isPresence) {
+      UserNameP.textContent = value.connectedName + "(n'est pas dans le chat)";
+    } else {
+      UserNameP.textContent = "";
+    }
+    UserNameP.classList.add("UserConnectedClass");
+    BoxConnectedUser.appendChild(UserNameP);
+  });
+});
+
+window.onbeforeunload = function (event) {
+  db.collection("userConnected").doc(recupererCookie("user")).delete();
+};

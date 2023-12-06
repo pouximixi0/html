@@ -19,6 +19,11 @@ function sendMessage() {
 const chatBox = document.getElementById("chat-box");
 const messagesRef = db.collection("messages");
 
+const addChatStatus = db
+  .collection("userConnected")
+  .doc(recupererCookie("user"));
+addChatStatus.set({ chat: true, connectedName: recupererCookie("UserChat") });
+
 messagesRef.orderBy("timestamp").onSnapshot((snapshot) => {
   chatBox.innerHTML = "";
 
@@ -58,3 +63,11 @@ function formatDate(timestamp) {
     return "Date non disponible";
   }
 }
+
+window.onbeforeunload = function (event) {
+  addChatStatus.set({
+    chat: false,
+    connectedName: recupererCookie("UserChat"),
+  });
+  db.collection("userConnected").doc(recupererCookie("user")).delete();
+};
